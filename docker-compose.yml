@@ -1,0 +1,66 @@
+# =====================================================================
+#  API de registro de usuarios
+#
+#   1. copiar .env.example a .env
+#   2. docker compose up --build
+#
+# La base de datos se crea, se puebla y queda lista sin pasos manuales.
+# =====================================================================
+
+services:
+
+  base-datos:
+    image: postgres:17-alpine
+    container_name: coink-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-coink_db}
+      POSTGRES_USER: ${POSTGRES_USER:-coink_app}
+      # Sin valor por defecto a propósito: la contraseña nunca vive en el
+      # repositorio. Si falta, compose se detiene con este mensaje.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD en el archivo .env (copie .env.example)}
+    ports:
+      # izquierda = puerto en SU máquina, tomado de POSTGRES_PUERTO del archivo
+      # .env (5432 si no lo define). Derecha = puerto dentro del contenedor,
+      # que no cambia nunca.
+      - "${POSTGRES_PUERTO:-5432}:5432"
+    volumes:
+      # Persistencia de los datos entre reinicios.
+      - datos-postgres:/var/lib/postgresql/data
+      # Los scripts se ejecutan en orden alfabético la primera vez que se
+      # crea el volumen: tablas, procedimientos y datos semilla.
+      - ./database:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-coink_app} -d ${POSTGRES_DB:-coink_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: coink-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      # La cadena de conexión se arma con las mismas variables del .env:
+      # no hay credenciales escritas en ningún archivo versionado.
+      # Timeout: 15 segundos para abrir conexión.
+      ConnectionStrings__Default: "Host=base-datos;Port=5432;Database=${POSTGRES_DB:-coink_db};Username=${POSTGRES_USER:-coink_app};Password=${POSTGRES_PASSWORD};Timeout=10;Command Timeout=15"
+      Swagger__Habilitado: "true"
+    ports:
+      # izquierda = puerto en SU máquina, tomado de API_PUERTO del archivo .env
+      # (8080 si no lo define): la API queda en http://localhost:API_PUERTO.
+      # Derecha = puerto dentro del contenedor; ahí Kestrel siempre escucha
+      # en 8080, y por eso la cadena de conexión entre contenedores usa 5432
+      # y no POSTGRES_PUERTO.
+      - "${API_PUERTO:-8080}:8080"
+    depends_on:
+      base-datos:
+        # Se espera a que PostgreSQL  responda, o la API fallaría en su primera conexión.
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  datos-postgres:

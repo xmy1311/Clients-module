@@ -1,0 +1,17 @@
+# Resultados de compilación locales: se recompila dentro de la imagen.
+**/bin
+**/obj
+
+# Entornos de desarrollo
+**/.vs
+**/.idea
+**/*.user
+
+# Control de versiones y secretos
+.git
+.gitignore
+.env
+
+# Documentación: no participa en la construcción
+docs
+*.md

@@ -1,0 +1,16 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+TestResults/
+
+# Entorno
+.env
+*.env.local
+
+# Sistema operativo / editores
+.DS_Store
+Thumbs.db
+.idea/
