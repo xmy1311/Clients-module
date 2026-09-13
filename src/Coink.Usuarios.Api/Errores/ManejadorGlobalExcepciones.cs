@@ -13,7 +13,6 @@ internal sealed class ManejadorGlobalExcepciones : IExceptionHandler
 
     public ManejadorGlobalExcepciones(ILogger<ManejadorGlobalExcepciones> registro) => _registro = registro;
 
-    /// <inheritdoc />
     public async ValueTask<bool> TryHandleAsync(
         HttpContext contexto,
         Exception excepcion,

@@ -7,13 +7,10 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 namespace Coink.Usuarios.Api.Swagger;
 
 /// <summary>
-/// Ejemplos realistas en la documentación. Los valores no son de relleno: usan
-/// los identificadores que carga el script semilla, de modo que quien abra
-/// Swagger pueda pulsar "Try it out" y obtener un 201 sin buscar datos válidos.
+/// Ejemplos realistas en la documentación.
 /// </summary>
 internal sealed class EjemplosSchemaFilter : ISchemaFilter
 {
-    /// <inheritdoc />
     public void Apply(OpenApiSchema esquema, SchemaFilterContext contexto)
     {
         if (contexto.Type == typeof(RegistrarUsuarioRequest))

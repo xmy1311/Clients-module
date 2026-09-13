@@ -7,9 +7,6 @@ namespace Coink.Usuarios.Infrastructure.Persistencia;
 
 /// <summary>
 /// Lecturas de catálogo, resueltas con funciones almacenadas.
-/// Los ordinales de las columnas se resuelven una sola vez y no en cada fila:
-/// con un catálogo completo, buscarlos por nombre fila a fila son miles de
-/// búsquedas inútiles por petición.
 /// </summary>
 internal sealed class CatalogoRepositorio : ICatalogoRepositorio
 {
@@ -17,7 +14,6 @@ internal sealed class CatalogoRepositorio : ICatalogoRepositorio
 
     public CatalogoRepositorio(NpgsqlDataSource origenDatos) => _origenDatos = origenDatos;
 
-    /// <inheritdoc />
     public async Task<IReadOnlyList<PaisResponse>> ObtenerPaisesAsync(CancellationToken cancelacion)
     {
         await using var comando = _origenDatos.CreateCommand(Procedimientos.ListarPaises);
@@ -40,7 +36,6 @@ internal sealed class CatalogoRepositorio : ICatalogoRepositorio
         return paises;
     }
 
-    /// <inheritdoc />
     public async Task<IReadOnlyList<DepartamentoResponse>> ObtenerDepartamentosAsync(int paisId, CancellationToken cancelacion)
     {
         await using var comando = _origenDatos.CreateCommand(Procedimientos.ListarDepartamentos);
@@ -67,7 +62,6 @@ internal sealed class CatalogoRepositorio : ICatalogoRepositorio
         return departamentos;
     }
 
-    /// <inheritdoc />
     public async Task<IReadOnlyList<MunicipioResponse>> ObtenerMunicipiosAsync(int departamentoId, CancellationToken cancelacion)
     {
         await using var comando = _origenDatos.CreateCommand(Procedimientos.ListarMunicipios);
