@@ -107,6 +107,6 @@ public sealed class RegistrarUsuarioValidatorTests
     {
         var resultado = _validador.Validate(Valida(nombre: ""));
 
-        Assert.Single(resultado.Errors?.Where(error => error.PropertyName == "nombre"));
+        Assert.Single(resultado.Errors, error => error.PropertyName == "nombre");
     }
 }
