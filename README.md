@@ -9,6 +9,60 @@ documentada con **Swagger UI**.
 
 ---
 
+## Arquitectura
+
+```
+                 ┌──────────────────────────────┐
+                 │   Swagger · Postman · curl   │
+                 └──────────────────────────────┘
+                                 │  HTTP
+                                 ▼
+┌────────────────────────────────────────────────────────────────┐
+│ Coink.Usuarios.Api                             :8080           │
+│                                                                │
+│ Controladores  ·  Filtro de validación  →  400                 │
+│ Manejador global  →  ProblemDetails + traceId                  │
+└────────────────────────────────────────────────────────────────┘
+                                 │  Resultado<T>
+                                 ▼
+┌────────────────────────────────────────────────────────────────┐
+│ Coink.Usuarios.Application                                     │
+│                                                                │
+│ UsuarioService · Validadores · Normalizador                    │
+│ Interfaces de repositorio  ◄── las implementa Infrastructure   │
+└────────────────────────────────────────────────────────────────┘
+                                 │
+                                 ▼
+┌────────────────────────────────────────────────────────────────┐
+│ Coink.Usuarios.Infrastructure                                  │
+│                                                                │
+│ Repositorios Npgsql · parámetros tipados                       │
+│ Sin SQL de negocio: solo invocan objetos almacenados           │
+└────────────────────────────────────────────────────────────────┘
+                                 │  CALL · SELECT
+                                 ▼
+┌────────────────────────────────────────────────────────────────┐
+│ PostgreSQL                                     :5432           │
+│                                                                │
+│ sp_registrar_usuario   valida país → departamento →            │
+│                        municipio e inserta, en una             │
+│                        sola transacción                        │
+│                                                                │
+│ fn_obtener_usuario · fn_listar_paises /                        │
+│                      fn_listar_departamentos /                 │
+│                      fn_listar_municipios                      │
+└────────────────────────────────────────────────────────────────┘
+```
+
+Cuatro ideas sostienen ese dibujo:
+
+- **La dependencia apunta hacia adentro.** `Application` define las interfaces y `Infrastructure` las implementa, así que `Application` **no referencia Npgsql**: lo impide el compilador. Por eso sus pruebas corren sin base de datos.
+- **Cada validación vive donde puede responder mejor.** El formato, en la API, que corta antes de gastar una conexión. La existencia y la coherencia entre país, departamento y municipio, dentro del procedimiento, en la misma transacción del `INSERT`.
+- **La aplicación no contiene SQL de negocio.** El repositorio solo invoca procedimientos y funciones, con parámetros tipados.
+- **Un único contrato de error.** Todo lo que falla sale como `ProblemDetails` con un código estable y un `traceId`, incluidos los errores que genera el framework.
+
+---
+
 ## Ejecutar
 
 Requisito único: **Docker Desktop**. No hace falta instalar .NET ni PostgreSQL.
