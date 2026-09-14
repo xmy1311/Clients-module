@@ -13,7 +13,7 @@ documentada con **Swagger UI**.
 
 ```
                  ┌──────────────────────────────┐
-                 │   Swagger · Postman · curl   │
+                 │             Swagger
                  └──────────────────────────────┘
                                  │  HTTP
                                  ▼
@@ -54,12 +54,12 @@ documentada con **Swagger UI**.
 └────────────────────────────────────────────────────────────────┘
 ```
 
-Cuatro ideas sostienen ese dibujo:
-
-- **La dependencia apunta hacia adentro.** `Application` define las interfaces y `Infrastructure` las implementa, así que `Application` **no referencia Npgsql**: lo impide el compilador. Por eso sus pruebas corren sin base de datos.
-- **Cada validación vive donde puede responder mejor.** El formato, en la API, que corta antes de gastar una conexión. La existencia y la coherencia entre país, departamento y municipio, dentro del procedimiento, en la misma transacción del `INSERT`.
-- **La aplicación no contiene SQL de negocio.** El repositorio solo invoca procedimientos y funciones, con parámetros tipados.
-- **Un único contrato de error.** Todo lo que falla sale como `ProblemDetails` con un código estable y un `traceId`, incluidos los errores que genera el framework.
+- **Dependencia.** `Application` define las interfaces e `Infrastructure` las implementa, así que `Application` **no referencia Npgsql**:. Por eso sus pruebas corren sin base de datos.
+  
+- **Validaciones.** El formato, en la API, que corta antes de gastar una conexión. La existencia y la coherencia entre país, departamento y municipio, dentro del procedimiento, en la misma transacción del `INSERT`.
+  
+- **Datos.** El repositorio solo invoca procedimientos y funciones, con parámetros tipados.
+**Errores.** Todo lo que falla sale como `ProblemDetails` con un código estable y un `traceId`, incluidos los errores que genera el framework.
 
 ---
 
